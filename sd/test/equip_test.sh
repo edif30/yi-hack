@@ -261,10 +261,20 @@ log "Debug mode = $(get_config DEBUG)"
 ### Let ppl hear that we start connect wifi
 /home/rmm "/home/hd1/voice/connectting.g726" 1
 
+<<<<<<< HEAD
 HOSTNAME="$(get_config HOSTNAME)"
 HOSTNAME="${HOSTNAME// /}" # strip all whitespace
 log "Setting hostname to ${HOSTNAME}"
 hostname "${HOSTNAME}"
+=======
+# Regardless of network configuration, the Yi also listens on 192.168.1.128 using eth0
+# this can cause problems on the network if another device has that IP
+# `ifconfig eth0 down` doesn't seem to do anything except hide eth0 from `ifconfig` output
+# so manually remove the configured IP by setting it to 0.0.0.0
+log "Disabling eth0"
+ifconfig eth0 0.0.0.0
+ifconfig eth0 down
+>>>>>>> disable-eth0
 
 log "Check for wifi configuration file...*"
 log $(find /home -name "wpa_supplicant.conf")
