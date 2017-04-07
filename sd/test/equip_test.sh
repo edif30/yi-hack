@@ -313,7 +313,7 @@ NTP_SERVER=$(get_config NTP_SERVER)
 log "But first, test the NTP server '${NTP_SERVER}':"
 ping -c1 ${NTP_SERVER} >> ${LOG_FILE}
 log "Previous datetime is $(date)"
-ntpd -q -p ${NTP_SERVER}
+ntpd -n -q -p ${NTP_SERVER}
 log "Done"
 log "New datetime is $(date)"
 
@@ -390,11 +390,11 @@ cd /home
 if [[ $(get_config RECORD) == "yes" ]] ; then
   ./record_event &
   ./mp4record 60 &
-fi
 
-### Start motion detection & reporting
-log "Starting motion notification processes"
-/home/hd1/test/check_motion.sh $(get_config MOTION_NOTIFICATION_URL) > /${LOG_DIR}/log_motion.txt 2>&1 &
+  ### Start motion detection & reporting
+  log "Starting motion notification processes"
+  /home/hd1/test/check_motion.sh $(get_config MOTION_NOTIFICATION_URL) > /${LOG_DIR}/log_motion.txt 2>&1 &
+fi
 
 ### Some configuration
 

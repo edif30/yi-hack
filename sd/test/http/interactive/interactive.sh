@@ -110,8 +110,8 @@ record() {
     if [ "${TOGGLE}" = "YES" ]; then
       if [ "${RESULT:-null}" = null ]; then
          echo "Starting Motion Recording"
-         /home/./record_event &
-         /home/./mp4record 60 &
+         /home/record_event &
+         /home/mp4record 60 &
          STATUS="Starting"
          BUTTON="Disable"
       else
