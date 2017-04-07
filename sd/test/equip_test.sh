@@ -58,7 +58,7 @@ log() {
 }
 
 get_config() {
-    grep "^$1=" /home/hd1/test/yi-hack.cfg  | cut -d"=" -f2
+    grep "^$1=" /home/hd1/test/config/yi-hack.cfg  | cut -d"=" -f2
 }
 
 boot_voice() {
@@ -197,7 +197,7 @@ done
 ### INFORMATION : the 'clic' 'clic' is done before this line
 
 ### we copy our wpa_supplicant file in /home
-cp /home/hd1/test/wpa_supplicant.conf /home/wpa_supplicant.conf
+cp /home/hd1/test/config/wpa_supplicant.conf /home/wpa_supplicant.conf
 
 
 ### Init logs
@@ -266,12 +266,6 @@ log "Debug mode = $(get_config DEBUG)"
 ### Let ppl hear that we start connect wifi
 boot_voice "/home/hd1/test/voice/connectting.g726"
 
-<<<<<<< HEAD
-HOSTNAME="$(get_config HOSTNAME)"
-HOSTNAME="${HOSTNAME// /}" # strip all whitespace
-log "Setting hostname to ${HOSTNAME}"
-hostname "${HOSTNAME}"
-=======
 # Regardless of network configuration, the Yi also listens on 192.168.1.128 using eth0
 # this can cause problems on the network if another device has that IP
 # `ifconfig eth0 down` doesn't seem to do anything except hide eth0 from `ifconfig` output
@@ -279,7 +273,11 @@ hostname "${HOSTNAME}"
 log "Disabling eth0"
 ifconfig eth0 0.0.0.0
 ifconfig eth0 down
->>>>>>> disable-eth0
+
+HOSTNAME="$(get_config HOSTNAME)"
+HOSTNAME="${HOSTNAME// /}" # strip all whitespace
+log "Setting hostname to ${HOSTNAME}"
+hostname "${HOSTNAME}"
 
 log "Check for wifi configuration file...*"
 log $(find /home -name "wpa_supplicant.conf")
