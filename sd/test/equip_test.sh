@@ -392,6 +392,10 @@ if [[ $(get_config RECORD) == "yes" ]] ; then
   ./mp4record 60 &
 fi
 
+### Start motion detection & reporting
+log "Starting motion notification processes"
+/home/hd1/test/check_motion.sh $(get_config MOTION_NOTIFICATION_URL) > /${LOG_DIR}/log_motion.txt 2>&1 &
+
 ### Some configuration
 
 himm 0x20050068 0x327c2c
