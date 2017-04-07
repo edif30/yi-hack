@@ -39,8 +39,7 @@ esac
 
 
 get_config() {
-    key=$1
-    grep $1 /home/hd1/test/yi-hack.cfg  | cut -d"=" -f2
+    grep "^$1=" /home/hd1/test/config/yi-hack.cfg  | cut -d"=" -f2
 }
 
 contains() {
@@ -53,7 +52,7 @@ contains() {
        return 1    # $substring is not in $string
     fi
 }
-                                        
+
 ftp() {
     RESULT="$(pgrep tcpsvd)"
     if [ "${TOGGLE}" = "YES" ]; then
@@ -69,7 +68,7 @@ ftp() {
         BUTTON="Enable"
       fi
     else
-      if [ "${RESULT:-null}" = null ]; then 
+      if [ "${RESULT:-null}" = null ]; then
         STATUS="Stopped"
         BUTTON="Enable"
       else
@@ -81,7 +80,7 @@ ftp() {
 
 rtsp() {
     RESULT="$(pgrep rtspsvr)"
-    if [ "${TOGGLE}" = "YES" ]; then 
+    if [ "${TOGGLE}" = "YES" ]; then
       if [ "${RESULT:-null}" = null ]; then
         echo "Starting RTSP server"
         ../.././rtspsvr${RTSP_VERSION} &
@@ -90,43 +89,43 @@ rtsp() {
       else
          echo "Closing RTSP server"
          pkill "rtspsvr"
-         STATUS="Stopping" 
+         STATUS="Stopping"
          BUTTON="Enable"
       fi
-    else                                               
-      if [ "${RESULT:-null}" = null ]; then            
-        STATUS="Stopped"                               
-        BUTTON="Enable"                                
-      else                                             
-        STATUS="Running"                               
-        BUTTON="Disable"                         
-      fi                                         
-    fi       
-                                          
+    else
+      if [ "${RESULT:-null}" = null ]; then
+        STATUS="Stopped"
+        BUTTON="Enable"
+      else
+        STATUS="Running"
+        BUTTON="Disable"
+      fi
+    fi
+
 
 }
 
 record() {
     RESULT="$(pgrep mp4record)"
-    if [ "${TOGGLE}" = "YES" ]; then    
-      if [ "${RESULT:-null}" = null ]; then                                                                                 
-         echo "Starting Motion Recording"                                                                                         
-         /home/./record_event & 
-         /home/./mp4record 60 &                                                                                    
+    if [ "${TOGGLE}" = "YES" ]; then
+      if [ "${RESULT:-null}" = null ]; then
+         echo "Starting Motion Recording"
+         /home/./record_event &
+         /home/./mp4record 60 &
          STATUS="Starting"
          BUTTON="Disable"
-      else                                                                                                                  
-         echo "Stopping Motion Recording"                                                                                         
+      else
+         echo "Stopping Motion Recording"
          pkill "record_event"
-         pkill "mp4record"   
-         STATUS="Stopping"                                                                                                 
+         pkill "mp4record"
+         STATUS="Stopping"
          BUTTON="Enable"
-      fi     
+      fi
     else
       if [ "${RESULT:-null}" = null ]; then
         STATUS="Stopped"
-        BUTTON="Enable" 
-      else                                                                                                                
+        BUTTON="Enable"
+      else
         STATUS="Running"
         BUTTON="Disable"
       fi
@@ -148,30 +147,30 @@ do
 # we use netcat to dynamically interact with the camera, we need to regenerate the status page on change
     OUTPUT="$(nc -l -p 8080 < redirect)"
 
-    echo "<html><head><meta http-equiv='refresh' content='10;url=http://${IP}:8080'></meta></head><body>" > status.html                                                                                                                                           
-    echo "<table><tr><td>Service</td><td>Status</td><td>Action</td></tr>" >> status.html     
-    
+    echo "<html><head><meta http-equiv='refresh' content='10;url=http://${IP}:8080'></meta></head><body>" > status.html
+    echo "<table><tr><td>Service</td><td>Status</td><td>Action</td></tr>" >> status.html
+
     TOGGLE=NO
     contains "$OUTPUT" "FTP" && TOGGLE=YES
 
     ftp
 
-    echo "<tr><td>FTP</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?FTP'><button type="button">${BUTTON}</button></a></td></tr>" >> status.html  
+    echo "<tr><td>FTP</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?FTP'><button type="button">${BUTTON}</button></a></td></tr>" >> status.html
 
-    TOGGLE=NO                                                                                                                                                                 
-    contains "$OUTPUT" "RTSP" && TOGGLE=YES                                                                                                                                    
+    TOGGLE=NO
+    contains "$OUTPUT" "RTSP" && TOGGLE=YES
 
     rtsp
 
-    echo "<tr><td>RTSP</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?RTSP'><button type="button">${BUTTON}</button></a></td></tr>" >> status.html    
- 
-    TOGGLE=NO                                                                                                                                                                 
-    contains "$OUTPUT" "RECORD" && TOGGLE=YES  
+    echo "<tr><td>RTSP</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?RTSP'><button type="button">${BUTTON}</button></a></td></tr>" >> status.html
+
+    TOGGLE=NO
+    contains "$OUTPUT" "RECORD" && TOGGLE=YES
 
     record
 
-    echo "<tr><td>Recording</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?RECORD'><button type="button">${BUTTON}</button></a><td></td></tr></td></tr>" >> status.html   
+    echo "<tr><td>Recording</td><td>${STATUS}</td><td><a href='http://${IP}:8080/?RECORD'><button type="button">${BUTTON}</button></a><td></td></tr></td></tr>" >> status.html
 
 
-    echo "</body></html>" >> status.html 
+    echo "</body></html>" >> status.html
 done
