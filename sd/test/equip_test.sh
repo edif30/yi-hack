@@ -266,6 +266,11 @@ log "Debug mode = $(get_config DEBUG)"
 ### Let ppl hear that we start connect wifi
 boot_voice "/home/hd1/test/voice/connectting.g726"
 
+HOSTNAME="$(get_config HOSTNAME)"
+HOSTNAME="${HOSTNAME// /}" # strip all whitespace
+log "Setting hostname to ${HOSTNAME}"
+hostname "${HOSTNAME}"
+
 # Regardless of network configuration, the Yi also listens on 192.168.1.128 using eth0
 # this can cause problems on the network if another device has that IP
 # `ifconfig eth0 down` doesn't seem to do anything except hide eth0 from `ifconfig` output
@@ -273,11 +278,6 @@ boot_voice "/home/hd1/test/voice/connectting.g726"
 log "Disabling eth0"
 ifconfig eth0 0.0.0.0
 ifconfig eth0 down
-
-HOSTNAME="$(get_config HOSTNAME)"
-HOSTNAME="${HOSTNAME// /}" # strip all whitespace
-log "Setting hostname to ${HOSTNAME}"
-hostname "${HOSTNAME}"
 
 log "Check for wifi configuration file...*"
 log $(find /home -name "wpa_supplicant.conf")
@@ -341,18 +341,15 @@ sync
 
 ### Launch FTP server
 log "Start ftp server..."
-if [[ $(get_config FTP) == "yes" ]] ; then
-
-  if [[ $(get_config DEBUG) == "yes" ]] ; then
-      tcpsvd -vE 0.0.0.0 21 ftpd -w / > /${LOG_DIR}/log_ftp.txt 2>&1 &
-  else
-      tcpsvd -vE 0.0.0.0 21 ftpd -w / &
-  fi
-  sleep 1
-
-  log "Check for ftp process : "
-  ps | grep tcpsvd | grep -v grep >> ${LOG_FILE}
+if [[ $(get_config DEBUG) == "yes" ]] ; then
+    tcpsvd -vE 0.0.0.0 21 ftpd -w / > /${LOG_DIR}/log_ftp.txt 2>&1 &
+else
+    tcpsvd -vE 0.0.0.0 21 ftpd -w / &
 fi
+sleep 1
+log "Check for ftp process : "
+ps | grep tcpsvd | grep -v grep >> ${LOG_FILE}
+
 
 ### Launch web server
 
@@ -368,19 +365,16 @@ mount -o bind /home/hd1/record/ /home/hd1/test/http/record/
 touch /home/hd1/test/http/motion
 
 # start the server
-if [[ $(get_config HTTP) == "yes" ]] ; then
-
-  log "Start http server : server${HTTP_VERSION}..."
-
-  if [[ $(get_config DEBUG) == "yes" ]] ; then
-      ./server${HTTP_VERSION} 80  > /${LOG_DIR}/log_http.txt 2>&1 &
-  else
-      ./server${HTTP_VERSION} 80 &
-  fi
-  sleep 1
-  log "Check for http server process : "
-  ps | grep server | grep -v grep | grep -v log_server >> ${LOG_FILE}
+log "Start http server : server${HTTP_VERSION}..."
+if [[ $(get_config DEBUG) == "yes" ]] ; then
+    ./server${HTTP_VERSION} 80  > /${LOG_DIR}/log_http.txt 2>&1 &
+else
+    ./server${HTTP_VERSION} 80 &
 fi
+sleep 1
+log "Check for http server process : "
+ps | grep server | grep -v grep | grep -v log_server >> ${LOG_FILE}
+
 sync
 
 
@@ -390,11 +384,12 @@ cd /home
 if [[ $(get_config RECORD) == "yes" ]] ; then
   ./record_event &
   ./mp4record 60 &
-
-  ### Start motion detection & reporting
-  log "Starting motion notification processes"
-  /home/hd1/test/check_motion.sh $(get_config MOTION_NOTIFICATION_URL) > /${LOG_DIR}/log_motion.txt 2>&1 &
 fi
+
+### Start motion detection & reporting
+log "Starting motion notification processes"
+/home/hd1/test/check_motion.sh $(get_config MOTION_NOTIFICATION_URL) > /${LOG_DIR}/log_motion.txt 2>&1 &
+
 
 ### Some configuration
 
@@ -449,17 +444,16 @@ cd /home
 
 ### Rtsp server
 cd /home/hd1/test/
-if [[ $(get_config RTSP) == "yes" ]] ; then
-  log "Start rtsp server : rtspsvr${RTSP_VERSION}..."
-  if [[ $(get_config DEBUG) == "yes" ]] ; then
-      ./rtspsvr${RTSP_VERSION} > /${LOG_DIR}/log_rtsp.txt 2>&1 &
-  else
-      ./rtspsvr${RTSP_VERSION} &
-  fi
-  sleep 1
-  log "Check for rtsp process : "
-  ps | grep rtspsvr | grep -v grep >> ${LOG_FILE}
+log "Start rtsp server : rtspsvr${RTSP_VERSION}..."
+if [[ $(get_config DEBUG) == "yes" ]] ; then
+    ./rtspsvr${RTSP_VERSION} > /${LOG_DIR}/log_rtsp.txt 2>&1 &
+else
+    ./rtspsvr${RTSP_VERSION} &
 fi
+sleep 1
+log "Check for rtsp process : "
+ps | grep rtspsvr | grep -v grep >> ${LOG_FILE}
+
 sleep 5
 
 cd /tmp/hd1/test/http/interactive
